@@ -65,7 +65,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/main.createMovieHandler.input"
+                            "$ref": "#/definitions/data.MovieCreation"
                         }
                     }
                 ],
@@ -108,6 +108,44 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Movie"
+                ],
+                "summary": "Show an a movie",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Movie Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Movie creation dto",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/data.MovieCreation"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/data.Movie"
+                        }
+                    }
+                }
             }
         }
     },
@@ -139,8 +177,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "runtime": {
-                    "type": "string",
-                    "example": "180 mins"
+                    "type": "integer"
                 },
                 "title": {
                     "type": "string"
@@ -153,7 +190,7 @@ const docTemplate = `{
                 }
             }
         },
-        "main.createMovieHandler.input": {
+        "data.MovieCreation": {
             "type": "object",
             "properties": {
                 "genres": {

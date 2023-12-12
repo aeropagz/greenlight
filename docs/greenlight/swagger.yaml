@@ -18,8 +18,7 @@ definitions:
       id:
         type: integer
       runtime:
-        example: 180 mins
-        type: string
+        type: integer
       title:
         type: string
       version:
@@ -27,7 +26,7 @@ definitions:
       year:
         type: integer
     type: object
-  main.createMovieHandler.input:
+  data.MovieCreation:
     properties:
       genres:
         items:
@@ -81,7 +80,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/main.createMovieHandler.input'
+          $ref: '#/definitions/data.MovieCreation'
       produces:
       - application/json
       responses:
@@ -102,6 +101,31 @@ paths:
         name: id
         required: true
         type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/data.Movie'
+      summary: Show an a movie
+      tags:
+      - Movie
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Movie Id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Movie creation dto
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/data.MovieCreation'
       produces:
       - application/json
       responses:

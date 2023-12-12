@@ -13,6 +13,7 @@ func (app *application) routes() *echo.Echo {
 	e.GET("/v1/healthcheck", app.healthcheckHandler)
 	e.POST("/v1/movies", app.createMovieHandler)
 	e.GET("/v1/movies/:id", app.showMovieHandler)
+	e.PUT("/v1/movies/:id", app.updateMovieHandler)
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
