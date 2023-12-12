@@ -1,9 +1,16 @@
 basePath: /
 definitions:
+  data.Healthcheck:
+    properties:
+      enviroment:
+        type: string
+      status:
+        type: string
+      version:
+        type: string
+    type: object
   data.Movie:
     properties:
-      createdAt:
-        type: string
       genres:
         items:
           type: string
@@ -11,11 +18,25 @@ definitions:
       id:
         type: integer
       runtime:
-        type: integer
+        example: 180 mins
+        type: string
       title:
         type: string
       version:
         type: integer
+      year:
+        type: integer
+    type: object
+  main.createMovieHandler.input:
+    properties:
+      genres:
+        items:
+          type: string
+        type: array
+      runtime:
+        type: integer
+      title:
+        type: string
       year:
         type: integer
     type: object
@@ -36,6 +57,41 @@ info:
   title: Swagger Example API
   version: 1.0.0
 paths:
+  /v1/healthcheck:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/data.Healthcheck'
+      summary: Show server status
+      tags:
+      - Status
+  /v1/movies:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Movie creation dto
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/main.createMovieHandler.input'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/data.Movie'
+      summary: Create an a movie
+      tags:
+      - Movie
   /v1/movies/{id}:
     get:
       consumes:
@@ -55,5 +111,5 @@ paths:
             $ref: '#/definitions/data.Movie'
       summary: Show an a movie
       tags:
-      - movie
+      - Movie
 swagger: "2.0"

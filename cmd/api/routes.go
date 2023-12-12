@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/swaggo/echo-swagger"
 	"github.com/labstack/echo/v4"
+	"github.com/swaggo/echo-swagger"
 
 	_ "greenlight.aeropagz.de/docs/greenlight"
 )

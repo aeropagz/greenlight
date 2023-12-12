@@ -4,9 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
-	"time"
 )
 
 const version = "1.0.0"
@@ -51,16 +49,6 @@ func main() {
 		logger: *logger,
 	}
 
-
-	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", cfg.port),
-		Handler:      app.routes(),
-		IdleTimeout:  time.Minute,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 30 * time.Second,
-	}
-
-	logger.Printf("starting %s server on %s", cfg.env, srv.Addr)
-	err := srv.ListenAndServe()
-	logger.Fatal(err)
+	e := app.routes()
+	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", cfg.port)))
 }

@@ -24,6 +24,61 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/v1/healthcheck": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Status"
+                ],
+                "summary": "Show server status",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/data.Healthcheck"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/movies": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Movie"
+                ],
+                "summary": "Create an a movie",
+                "parameters": [
+                    {
+                        "description": "Movie creation dto",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.createMovieHandler.input"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/data.Movie"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/movies/{id}": {
             "get": {
                 "consumes": [
@@ -33,7 +88,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "movie"
+                    "Movie"
                 ],
                 "summary": "Show an a movie",
                 "parameters": [
@@ -57,12 +112,23 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "data.Healthcheck": {
+            "type": "object",
+            "properties": {
+                "enviroment": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
         "data.Movie": {
             "type": "object",
             "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
                 "genres": {
                     "type": "array",
                     "items": {
@@ -73,13 +139,34 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "runtime": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "180 mins"
                 },
                 "title": {
                     "type": "string"
                 },
                 "version": {
                     "type": "integer"
+                },
+                "year": {
+                    "type": "integer"
+                }
+            }
+        },
+        "main.createMovieHandler.input": {
+            "type": "object",
+            "properties": {
+                "genres": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "runtime": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
                 },
                 "year": {
                     "type": "integer"
