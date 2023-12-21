@@ -5,11 +5,15 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	"log"
+	"net/http"
 	"os"
+	"os/signal"
 	"time"
 
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	_ "github.com/lib/pq"
+	"github.com/rs/zerolog"
 	"greenlight.aeropagz.de/internal/data"
 )
 
@@ -28,7 +32,7 @@ type config struct {
 
 type application struct {
 	config config
-	logger log.Logger
+	logger zerolog.Logger
 	models data.Models
 }
 
@@ -60,24 +64,53 @@ func main() {
 
 	flag.Parse()
 
-	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
+	logger := zerolog.New(os.Stdout)
 
 	db, err := openDB(cfg)
 	if err != nil {
-		logger.Fatal(err)
+		logger.Fatal().AnErr("db", err).Msg("failed to connect to db")
 	}
 	defer db.Close()
 
-	logger.Printf("database connection pool established\n")
+	logger.Info().Msg("database connection pool established")
 
 	app := &application{
 		config: cfg,
-		logger: *logger,
+		logger: logger,
 		models: data.NewModels(db),
 	}
-
+	addr := fmt.Sprintf(":%d", cfg.port)
 	e := app.routes()
-	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", cfg.port)))
+	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
+		LogURI:    true,
+		LogStatus: true,
+		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+			logger.Info().
+				Str("URI", v.URI).
+				Int("status", v.Status).
+				Msg("request")
+
+			return nil
+		},
+	}))
+	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(20)))
+	go func() {
+		if err := e.Start(addr); err != nil && err != http.ErrServerClosed {
+			app.logger.Err(err).Msg("server could not start")
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+	<- quit
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+	
+	if err := e.Shutdown(ctx); err != nil {
+		app.logger.Fatal().Err(err).Msg("server not able to shutdown")
+	}
+
 }
 
 func openDB(cfg config) (*sql.DB, error) {

@@ -146,6 +146,35 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Movie"
+                ],
+                "summary": "Delete an a movie",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Movie Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    }
+                }
             }
         }
     },
@@ -160,6 +189,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "data.Message": {
+            "type": "object",
+            "properties": {
+                "message": {
                     "type": "string"
                 }
             }

@@ -9,6 +9,11 @@ definitions:
       version:
         type: string
     type: object
+  data.Message:
+    properties:
+      message:
+        type: string
+    type: object
   data.Movie:
     properties:
       genres:
@@ -92,6 +97,25 @@ paths:
       tags:
       - Movie
   /v1/movies/{id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Movie Id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/data.Message'
+      summary: Delete an a movie
+      tags:
+      - Movie
     get:
       consumes:
       - application/json
