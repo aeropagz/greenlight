@@ -10,11 +10,10 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
 	"greenlight.aeropagz.de/internal/data"
+	"greenlight.aeropagz.de/internal/mailer"
 )
 
 const version = "1.0.0"
@@ -28,12 +27,20 @@ type config struct {
 		maxIdleConns int
 		maxIdleTime  string
 	}
+	smtp struct {
+		host     string
+		port     int
+		username string
+		password string
+		sender   string
+	}
 }
 
 type application struct {
 	config config
 	logger zerolog.Logger
 	models data.Models
+	mailer mailer.Mailer
 }
 
 // @title           Swagger Example API
@@ -62,6 +69,12 @@ func main() {
 	flag.IntVar(&cfg.db.maxIdleConns, "db-max-idle-conns", 25, "PostgresSQL max idle connection")
 	flag.StringVar(&cfg.db.maxIdleTime, "db-max-idle-time", "15m", "PostgresSQL max connection idle time")
 
+	flag.StringVar(&cfg.smtp.host, "smtp-host", "sandbox.smtp.mailtrap.io", "SMTP host")
+	flag.IntVar(&cfg.smtp.port, "smtp-port", 2525, "SMTP port")
+	flag.StringVar(&cfg.smtp.username, "smtp-username", "919d7899e18b6e", "SMTP username")
+	flag.StringVar(&cfg.smtp.password, "smtp-password", "95c334028f5d38", "SMTP password")
+	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "Greenlight <no-reply@greenlight.alexedwards.net>", "SMTP sender")
+
 	flag.Parse()
 
 	logger := zerolog.New(os.Stdout)
@@ -78,22 +91,11 @@ func main() {
 		config: cfg,
 		logger: logger,
 		models: data.NewModels(db),
+		mailer: mailer.New(cfg.smtp.host, cfg.smtp.port, cfg.smtp.username, cfg.smtp.password, cfg.smtp.sender),
 	}
-	addr := fmt.Sprintf(":%d", cfg.port)
-	e := app.routes()
-	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
-		LogURI:    true,
-		LogStatus: true,
-		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
-			logger.Info().
-				Str("URI", v.URI).
-				Int("status", v.Status).
-				Msg("request")
 
-			return nil
-		},
-	}))
-	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(20)))
+	e := app.routes()
+	addr := fmt.Sprintf(":%d", app.config.port)
 	go func() {
 		if err := e.Start(addr); err != nil && err != http.ErrServerClosed {
 			app.logger.Err(err).Msg("server could not start")
@@ -102,11 +104,11 @@ func main() {
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
-	<- quit
+	<-quit
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
-	
+
 	if err := e.Shutdown(ctx); err != nil {
 		app.logger.Fatal().Err(err).Msg("server not able to shutdown")
 	}

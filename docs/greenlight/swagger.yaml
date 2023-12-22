@@ -44,6 +44,28 @@ definitions:
       year:
         type: integer
     type: object
+  data.User:
+    properties:
+      activated:
+        type: boolean
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  main.createUserHandler.userIn:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    type: object
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
@@ -89,8 +111,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
             $ref: '#/definitions/data.Movie'
       summary: Create an a movie
@@ -160,4 +182,25 @@ paths:
       summary: Show an a movie
       tags:
       - Movie
+  /v1/users:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Movie creation dto
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/main.createUserHandler.userIn'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/data.User'
+      summary: Create an a user
+      tags:
+      - User
 swagger: "2.0"

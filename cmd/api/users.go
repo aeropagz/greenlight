@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -10,6 +9,13 @@ import (
 	"greenlight.aeropagz.de/internal/validator"
 )
 
+// @Summary     Create an a user
+// @Tags		User
+// @Accept 		json
+// @Produce 	json
+// @Param		request body main.createUserHandler.userIn true "Movie creation dto"
+// @Success		201 {object} data.User
+// @Router	/v1/users [post]
 func (app *application) createUserHandler(c echo.Context) error {
 	type userIn struct {
 		Name     string `json:"name"`
@@ -35,7 +41,6 @@ func (app *application) createUserHandler(c echo.Context) error {
 	}
 
 	v := validator.New()
-	fmt.Printf("email: %s\n", input.Email)
 	if data.ValidateUser(v, user); !v.Valid() {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, v.Errors)
 	}
@@ -51,6 +56,11 @@ func (app *application) createUserHandler(c echo.Context) error {
 		}
 	}
 
-	return c.JSON(http.StatusCreated, user)
+	err = app.mailer.Send(user.Email, "user_welcome.html", user)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
 
+
+	return c.JSON(http.StatusCreated, user)
 }
