@@ -17,7 +17,7 @@ func (app *application) readString(c echo.Context, key string, defaultValue stri
 	return s
 }
 
-func (app *application) readCSV(c echo.Context, key string, defaultValue []string) [] string {
+func (app *application) readCSV(c echo.Context, key string, defaultValue []string) []string {
 	csv := c.QueryParam(key)
 	if csv == "" {
 		return defaultValue
@@ -39,4 +39,19 @@ func (app *application) readInt(c echo.Context, key string, defaultValue int, v 
 	}
 
 	return i
+}
+
+func (app *application) background(fn func()) {
+	app.wg.Add(1)
+
+	go func() {
+		defer app.wg.Done()
+		defer func() {
+			if err := recover(); err != nil {
+				app.logger.Error().Msg("error on background task")
+			}
+		}()
+
+		fn()
+	}()
 }

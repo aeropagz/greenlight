@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
 	"errors"
 	"time"
@@ -82,7 +83,7 @@ func ValidateUser(v *validator.Validator, user *User) {
 	}
 }
 
-func (model *UserModel) Update(user User) (*User, error) {
+func (model *UserModel) Update(user *User) (*User, error) {
 	stmt := `UPDATE users 
 			SET name = $1, email = $2, password_hash = $3, activated = $4, version = version + 1
 			WHERE id = $5 AND version = $6
@@ -91,7 +92,7 @@ func (model *UserModel) Update(user User) (*User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
 
-	args := []any{user.Name, user.Password.hash, user.Activated, user.ID, user.Version}
+	args := []any{user.Name, user.Email, user.Password.hash, user.Activated, user.ID, user.Version}
 
 	err := model.DB.QueryRowContext(ctx, stmt, args...).Scan(&user.Version)
 	if err != nil {
@@ -105,7 +106,7 @@ func (model *UserModel) Update(user User) (*User, error) {
 		}
 	}
 
-	return &user, nil
+	return user, nil
 }
 
 func (model *UserModel) GetByEmail(email string) (*User, error) {
@@ -160,4 +161,43 @@ func (model *UserModel) Insert(user *User) error {
 	}
 
 	return nil
+}
+
+func (m UserModel) GetForToken(tokenScope, tokenPlaintext string) (*User, error) {
+	tokenHash := sha256.Sum256([]byte(tokenPlaintext))
+	query := `
+		SELECT users.id, users.created_at, users.name, users.email, users.password_hash, users.activated, users.version
+		FROM users
+		INNER JOIN tokens
+		ON users.id = tokens.user_id
+		WHERE tokens.hash = $1
+		AND tokens.scope = $2
+		AND expiry > $3`
+		
+	args := []any{tokenHash[:], tokenScope, time.Now()}
+
+	var user User
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	defer cancel()
+
+	err := m.DB.QueryRowContext(ctx, query, args...).Scan(
+		&user.ID,
+		&user.CreatedAt,
+		&user.Name,
+		&user.Email,
+		&user.Password.hash,
+		&user.Activated,
+		&user.Version,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, err
+		default:
+			return nil, err
+		}
+	}
+
+	return &user, nil
 }

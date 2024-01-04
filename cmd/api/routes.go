@@ -34,6 +34,7 @@ func (app *application) routes() *echo.Echo {
 	e.DELETE("/v1/movies/:id", app.deleteMovieHandler)
 
 	e.POST("/v1/users", app.createUserHandler)
+	e.PUT("v1/users/activated", app.activateUserHandler)
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 

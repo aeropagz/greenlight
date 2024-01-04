@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -41,6 +42,7 @@ type application struct {
 	logger zerolog.Logger
 	models data.Models
 	mailer mailer.Mailer
+	wg sync.WaitGroup
 }
 
 // @title           Swagger Example API
@@ -112,6 +114,8 @@ func main() {
 	if err := e.Shutdown(ctx); err != nil {
 		app.logger.Fatal().Err(err).Msg("server not able to shutdown")
 	}
+
+	app.wg.Wait()
 
 }
 

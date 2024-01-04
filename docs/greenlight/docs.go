@@ -209,6 +209,39 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/v1/users/activated": {
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Activate an a user",
+                "parameters": [
+                    {
+                        "description": "Activation Token",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.activateUserHandler.Input"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/data.User"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -296,6 +329,14 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "main.activateUserHandler.Input": {
+            "type": "object",
+            "properties": {
+                "token": {
                     "type": "string"
                 }
             }

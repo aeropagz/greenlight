@@ -57,6 +57,11 @@ definitions:
       name:
         type: string
     type: object
+  main.activateUserHandler.Input:
+    properties:
+      token:
+        type: string
+    type: object
   main.createUserHandler.userIn:
     properties:
       email:
@@ -201,6 +206,27 @@ paths:
           schema:
             $ref: '#/definitions/data.User'
       summary: Create an a user
+      tags:
+      - User
+  /v1/users/activated:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Activation Token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/main.activateUserHandler.Input'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/data.User'
+      summary: Activate an a user
       tags:
       - User
 swagger: "2.0"
