@@ -11,9 +11,7 @@ import (
 	"greenlight.aeropagz.de/internal/validator"
 )
 
-var (
-	ErrDuplicateEmail = errors.New("duplicate email")
-)
+var ErrDuplicateEmail = errors.New("duplicate email")
 
 type User struct {
 	ID        int64     `json:"id"`
@@ -24,7 +22,6 @@ type User struct {
 	Activated bool      `json:"activated"`
 	Version   int       `json:"-"`
 }
-
 
 type password struct {
 	plaintext *string
@@ -173,12 +170,12 @@ func (m UserModel) GetForToken(tokenScope, tokenPlaintext string) (*User, error)
 		WHERE tokens.hash = $1
 		AND tokens.scope = $2
 		AND expiry > $3`
-		
+
 	args := []any{tokenHash[:], tokenScope, time.Now()}
 
 	var user User
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	err := m.DB.QueryRowContext(ctx, query, args...).Scan(
@@ -201,3 +198,4 @@ func (m UserModel) GetForToken(tokenScope, tokenPlaintext string) (*User, error)
 
 	return &user, nil
 }
+

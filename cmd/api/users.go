@@ -76,7 +76,6 @@ func (app *application) createUserHandler(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-
 	return c.JSON(http.StatusCreated, user)
 }
 
@@ -132,5 +131,4 @@ func (app *application) activateUserHandler(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, user)
-
 }

@@ -97,7 +97,7 @@ func (app *application) updateMovieHandler(c echo.Context) error {
 		}
 	}
 
-	var input = new(data.MovieCreation)
+	input := new(data.MovieCreation)
 
 	if err := c.Bind(input); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
